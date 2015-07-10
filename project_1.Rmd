@@ -93,18 +93,60 @@ Red vertical line on a plot represents the 5-minutes interval, which contains th
 ## Imputing missing values
 
 There are missing values in the data. The presence of missing days may introduce bias into some calculations or summaries of the data. That is why we will do the following:  
-1. Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)  
-2. Use the mean for appropriate 5-minute interval to substitute NAs.  
-3. Create a new dataset that is equal to the original dataset but with the missing data filled in.  
-4. Make a histogram of the total number of steps taken each day  
-5. Calculate and report the mean and median total number of steps taken per day.  
-6. Find the answers:    
+1. Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)   
+2. Create a new dataset that is equal to the original dataset but with the missing data filled in. For filling we use the mean for appropriate 5-minute interval to substitute NAs.  
+3. Make a histogram of the total number of steps taken each day  
+4. Calculate and report the mean and median total number of steps taken per day.   
+5. Find the answers:    
     + Do these values differ from the estimates from the first part of the assignment?  
     + What is the impact of imputing missing data on the estimates of the total daily number of steps?    
 
 ```{r task3-1}
 sum(is.na(activity.data$steps))
 ```
-Total number of missing values is **`r format(sum(is.na(activity.data$steps)), digits=5, big.mark=" ")`**
+Total number of missing values is **`r format(sum(is.na(activity.data$steps)), digits=5, big.mark=" ")`**.
+
+Now let us create a new data set with all NAs replaced by mean of for appropriate 5-minute interval.
+```{r task3-2}
+full <- activity.data
+
+for (n in 1:dim(full)[1]) {
+    if (is.na(full$steps[n])) full$steps[n] <- intervals$x[which(intervals$Category == full$interval[n])]
+}
+head(full)
+sum(is.na(full$steps))
+```
+
+It is time for histogram (not a barplot) built on inputing data.
+```{r task3-3}
+full.days<-aggregate(full$steps,
+                            by=list(Category=full$date), FUN=sum)
+
+hist(full.days$x, 
+     breaks = seq(0,22000,by=2000), 
+     col = "lightblue", border = "blue",
+     xlim = c(0,22000),
+     axes = F,
+     main = "Distributions of total number of steps \ntaken per day",
+     xlab = "Number of steps",
+     ylab = "Frequency")
+axis(1, at = seq(0,22000,by=2000))
+axis(2)
+```
+
+The mean and median of imputing data are:
+
+```{r task3-4}
+mean(full.days$x)
+
+median(full.days$x)
+```
+
+They are equal to each other! Coincidence? Not at all. There are 8 days in the data set with all 5-minutes interval marked as NA. It is obvious that after inputing the data all of them will be equal to each other and at the same time equal to the mean of total number of steps. Here is the grimace of artificial data!
+
+Now we are ready to answer the question of the 5th point:  
+    + Yes, these values differ from the estimates from the first part of the assignment  
+    + Total number of steps is increased: **`r format(sum(activity.data$steps, na.rm = T), big.mark=" ")`** VS **`r format(sum(full$steps), big.mark=" ")`**. If we are talking about mean it is also increased **`r format(mean(days$x), big.mark=" ")`** VS **`r format(mean(full.days$x), big.mark=" ")`**
+
 
 ## Are there differences in activity patterns between weekdays and weekends?
