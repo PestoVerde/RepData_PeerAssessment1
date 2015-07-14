@@ -1,9 +1,4 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 <br>
 
 ## Loading and preprocessing the data
@@ -13,7 +8,8 @@ First of all, let us perform all those boring steps we need to begin our investi
 3. reading the data  
 4. installing necessary packages  
 
-```{r preparation}
+
+```r
 Windows <- FALSE
 if(Sys.info()["sysname"]=="Windows") Windows <- T
 
@@ -33,7 +29,6 @@ activity.data <- read.csv("activity.csv", header = T)
 
 if(!("lattice" %in% installed.packages())) install.packages("lattice")
 library(lattice)
-
 ```
 <br>
 
@@ -43,7 +38,8 @@ In this part of the assignment, we ignore the missing values in the dataset. We 
 2. Make a histogram (not barplot!) of the total number of steps taken each day  
 3. Calculate and report the mean and median of the total number of steps taken per day  
 
-```{r task1}
+
+```r
 days<-aggregate(activity.data$steps,
                             by=list(Category=activity.data$date), FUN=sum, na.rm = T)
 hist(days$x, 
@@ -56,12 +52,26 @@ hist(days$x,
      ylab = "Frequency")
 axis(1, at = seq(0,22000,by=2000))
 axis(2)
+```
 
+![](PA1_template_files/figure-html/task1-1.png) 
+
+```r
 mean(days$x, na.rm = T)
+```
 
+```
+## [1] 9354.23
+```
+
+```r
 median(days$x, na.rm = T)
 ```
-The **mean** of the total number of steps taken per day equals **`r format(mean(days$x, na.rm = T), digits=4, big.mark=" ")`**, when the **median** of the value equals **`r format(median(days$x, na.rm = T), digits=5, big.mark=" ")`**.  
+
+```
+## [1] 10395
+```
+The **mean** of the total number of steps taken per day equals **9 354**, when the **median** of the value equals **10 395**.  
 <br>  
 
 ## What is the average daily activity pattern?  
@@ -69,7 +79,8 @@ Here we are going to do two things:
 1. Build the plot which shows the daily activity pattern as number of steps taken in 5 minutes interval, averaged across all days.  
 2. Find the 5-minute interval, which contains the maximum number of steps.
 
-```{r task2}
+
+```r
 intervals <- aggregate(activity.data$steps,
                             by=list(Category=activity.data$interval), FUN=mean, na.rm = T)
 
@@ -85,10 +96,18 @@ axis(1, at = intervals$Category[ticks],
      labels=format(intervals$Category[ticks], big.mark = ":", big.interval = 2L))
 axis(2)
 abline(v = intervals$Category[which.max(intervals$x)], col = "red")
+```
 
+![](PA1_template_files/figure-html/task2-1.png) 
+
+```r
 intervals$Category[which(intervals$x==max(intervals$x))]
-```  
-Red vertical line on a plot represents the 5-minutes interval, which contains the maximum number of steps. This interval starts at **`r format(intervals$Category[which(intervals$x==max(intervals$x))], big.mark = ":", big.interval = 2L)`**.
+```
+
+```
+## [1] 835
+```
+Red vertical line on a plot represents the 5-minutes interval, which contains the maximum number of steps. This interval starts at **8:35**.
 
 ## Imputing missing values
 
@@ -101,24 +120,48 @@ There are missing values in the data. The presence of missing days may introduce
     * Do these values differ from the estimates from the first part of the assignment?  
     * What is the impact of imputing missing data on the estimates of the total daily number of steps?    
 
-```{r task3-1}
+
+```r
 sum(is.na(activity.data$steps))
 ```
-Total number of missing values is **`r format(sum(is.na(activity.data$steps)), digits=5, big.mark=" ")`**.
+
+```
+## [1] 2304
+```
+Total number of missing values is **2 304**.
 
 Now let us create a new data set with all NAs replaced by mean of for appropriate 5-minute interval.
-```{r task3-2}
+
+```r
 full <- activity.data
 
 for (n in 1:dim(full)[1]) {
     if (is.na(full$steps[n])) full$steps[n] <- intervals$x[which(intervals$Category == full$interval[n])]
 }
 head(full)
+```
+
+```
+##       steps       date interval
+## 1 1.7169811 2012-10-01        0
+## 2 0.3396226 2012-10-01        5
+## 3 0.1320755 2012-10-01       10
+## 4 0.1509434 2012-10-01       15
+## 5 0.0754717 2012-10-01       20
+## 6 2.0943396 2012-10-01       25
+```
+
+```r
 sum(is.na(full$steps))
 ```
 
+```
+## [1] 0
+```
+
 It is time for histogram (not a barplot) built on inputing data.
-```{r task3-3}
+
+```r
 full.days<-aggregate(full$steps,
                             by=list(Category=full$date), FUN=sum)
 
@@ -134,19 +177,32 @@ axis(1, at = seq(0,22000,by=2000))
 axis(2)
 ```
 
+![](PA1_template_files/figure-html/task3-3-1.png) 
+
 The mean and median of imputing data are:
 
-```{r task3-4}
-mean(full.days$x)
 
+```r
+mean(full.days$x)
+```
+
+```
+## [1] 10766.19
+```
+
+```r
 median(full.days$x)
+```
+
+```
+## [1] 10766.19
 ```
 
 They are equal to each other! Coincidence? Not at all. There are 8 days in the data set with all 5-minutes interval marked as NA. It is obvious that after inputing the data all of them will be equal to each other and at the same time equal to the mean of total number of steps. Here is the grimace of artificial data!
 
 Now we are ready to answer the question of the 5th point:  
     * Yes, these values differ from the estimates from the first part of the assignment  
-    * Total number of steps is increased: **`r format(sum(activity.data$steps, na.rm = T), big.mark=" ")`** VS **`r format(sum(full$steps), big.mark=" ")`**. If we are talking about mean it is also increased **`r format(mean(days$x), big.mark=" ")`** VS **`r format(mean(full.days$x), big.mark=" ")`**
+    * Total number of steps is increased: **570 608** VS **656 737.5**. If we are talking about mean it is also increased **9 354.23** VS **10 766.19**
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
@@ -158,7 +214,8 @@ Let us compare the activity in weekdays and weekends. To do this we will perform
 1. Create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day.  
 2. Make a panel plot containing a time series plot of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis).  
 
-```{r task4}
+
+```r
 full$date <- as.Date(full$date)
 working.days <- c('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday')
 full$wDay <- factor((weekdays(full$date) %in% working.days), levels=c(FALSE, TRUE), labels=c('weekend', 'weekday'))
@@ -166,7 +223,8 @@ full$wDay <- factor((weekdays(full$date) %in% working.days), levels=c(FALSE, TRU
 j <- aggregate(full$steps, by=list(Category=full$interval, full$wDay), FUN=mean, na.rm = T)
 
 xyplot(j$x~j$Category|j$Group.2, type="l", main="Activity patterns \nweekdays comparing to weekends", xlab="Interval", ylab="Number of steps", layout=c(1,2))
-
 ```
+
+![](PA1_template_files/figure-html/task4-1.png) 
 
 Thus we have answered all the questions of the assessment.
